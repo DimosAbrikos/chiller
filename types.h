@@ -14,17 +14,12 @@ class heatFlow{
 
     void tick(float inputTemp, float outTemp, uint32_t time);
 
-    //float getDeltaHeat();
     float getCoolingPower();
     float getHeatingPower();
-    //float getDeltaTemp();
 
     private:
 
     float inputTemp;
-
-    float deltaHeat;
-    float deltaTemp;
     float pPower;
     float coolPower;
     float heatPower;
@@ -32,6 +27,6 @@ class heatFlow{
 
     uint32_t lastTime;
 
-    void calc(uint32_t time);
+    float calc(float t1, float t2);
 
 }

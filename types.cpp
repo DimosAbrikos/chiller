@@ -18,10 +18,8 @@ void heatFlow::tick(float inputTemp, float outTemp, uint32_t time){
     lastTime = time;
 }
 
-//float heatFlow::getDeltaHeat(){return deltaHeat;}
 float heatFlow::getCoolingPower(){return coolPower;}
 float heatFlow::getHeatingPower(){return heatPower;}
-//float heatFlow::getDeltaTemp(){return deltaTemp}
 
 float heatFlow::calc(float t1, float t2){
     return WATER_HEAT_C * pPower * per * (t2 - t1);
