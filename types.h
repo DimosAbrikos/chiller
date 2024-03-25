@@ -10,34 +10,28 @@ class heatFlow{
 
     public:
 
-    void setState(float pumpPower){
-        pPower = pumpPower;
-    }
+    void setState(float pumpPower);
 
-    void tick(float inputTemp, float outTemp, uint32_t time){
-        this->inputTemp = inputTemp;
-        this->outTemp = outTemp;
-        calc(time);
-        lastTime = time;
-    }
+    void tick(float inputTemp, float outTemp, uint32_t time);
 
-    float getDeltaHeat(){return deltaHeat;}
-    float getCoolPower(){return coolPower;}
+    //float getDeltaHeat();
+    float getCoolingPower();
+    float getHeatingPower();
+    //float getDeltaTemp();
 
     private:
 
     float inputTemp;
-    float outTemp;
+
     float deltaHeat;
+    float deltaTemp;
     float pPower;
     float coolPower;
+    float heatPower;
+    float per;
 
     uint32_t lastTime;
 
-    void calc(uint32_t time){
-        float per = (time - lastTime)/1000;
-        deltaHeat = WATER_HEAT_C * pPower * per * (outTemp - inputTemp);
-        coolPower = deltaHeat * per;
-    }
+    void calc(uint32_t time);
 
 }
