@@ -1,4 +1,4 @@
-float getTemp(int ind);
-void display(float pow, float dT);
+#include <Arduino.h>
 
-void calibratePump();
+void display(float cPow, float hPow);
+int calibratePump();

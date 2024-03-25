@@ -9,7 +9,7 @@ void heatFlow::tick(float inputTemp, float outTemp, uint32_t time){
     per = (time - lastTime)/1000;
 
     float dH = calc(this->inputTemp, inputTemp);
-    heatPower = dh * per;
+    heatPower = dH * per;
     this->inputTemp = inputTemp;
     
     float dC = calc(inputTemp, outTemp);

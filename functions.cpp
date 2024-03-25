@@ -1,24 +1,5 @@
 #include "functions.h"
 
-float getTemp(int ind){
-    if(ind == 0){
-
-        float t = 0;
-        if (sensor1.readTemp()) t = sensor1.getTemp();
-        sensor1.requestTemp();
-        return t;
-
-    }else if (ind == 1){
-
-        float t = 0;
-        if (sensor2.readTemp()) t = sensor2.getTemp();
-        sensor2.requestTemp();
-        return t;
-
-    }   
-
-}
-
 void display(float cPow, float hPow){
     Serial.print("Cooling power: ");
     Serial.print(cPow);
