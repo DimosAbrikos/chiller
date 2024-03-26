@@ -35,7 +35,10 @@ void loop(){
     if(Serial.available() > 0){
       enable = false;
       delay(100);
-      if(verCommand("#c", 2))hFlow.setState(calibratePump());
+      if(verCommand("/cal", 4)){
+        int cl = calibratePump();
+        if(cl) hFlow.setState(cl);
+      }
       enable = true;
     }
     
