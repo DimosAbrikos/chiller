@@ -12,9 +12,11 @@ uint32_t period = 5000; // min 800
 
 #include "functions.h"
 float getTemp(int ind);
+bool enable = true;
 
 void setup(){
     Serial.begin(9600);
+    Serial.setTimeout(500);
     hFlow.setState(1000);
     sensor1.requestTemp();
     sensor2.requestTemp();
@@ -24,9 +26,17 @@ void setup(){
 
 void loop(){
 
-    if(millis() - tmr > period){
+    if(millis() - tmr > period && enable){
+        tmr = millis();
         hFlow.tick(getTemp(0), getTemp(1), millis());
         display(hFlow.getCoolingPower(), hFlow.getHeatingPower());
+    }
+    
+    if(Serial.available() > 0){
+      enable = false;
+      delay(100);
+      if(verCommand("#c", 2))hFlow.setState(calibratePump());
+      enable = true;
     }
     
 }

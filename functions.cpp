@@ -1,60 +1,79 @@
 #include "functions.h"
 
-void display(float cPow, float hPow){
-    Serial.print("Cooling power: ");
-    Serial.print(cPow);
-    Serial.print(" Heatimg power: ");
-    Serial.println(hPow);
+void display(float cPow, float hPow) {
+  Serial.print("Cooling power: ");
+  Serial.print(cPow);
+  Serial.print(" Heatimg power: ");
+  Serial.println(hPow);
+  Serial.flush();
 }
 
-int calibratePump(){
-    Serial.println("****************Now we start calibrate pump*****************");
-    Serial.println("Drain the water into the measuring container for 10 seconds.");
-    Serial.println("Type /1 when you're ready, or type /0 to decline >>>>>>>>>>>");
+int calibratePump() {
+  cleanBuf();
+  Serial.println("****************Now we start calibrate pump*****************");
+  Serial.println("Drain the water into the measuring container for 10 seconds.");
+  Serial.println("Type /1 when you're ready, or type /0 to decline >>>>>>>>>>>");
+  waitBuf(30000);
+  bool state = false;
+  bool tr = true;
 
-    bool state = false;
-    bool tr = true;
+  int V = 0;
 
-    int V = 0;
+  state = verCommand("/1", 2);
+  
+  
+  cleanBuf();
 
-    while(Serial.available() > 0){
-        if(tr){
-            char first = Serial.read();
-            if(first == '/'){
-                char second = Serial.read();
-                if(second == '1') {
-                    state = true;
-                    tr = false;
-                }
-                if(second == '0') {
-                    state = false;
-                    tr = false;
-                }
-            }
-        }
-        char bin = Serial.read();
+  int turns = 3;
+
+  while (state && turns > 0) {
+    Serial.println("Type how many millilitres of water you have. ex: $1500 *****");
+    Serial.println("which corresponds to 1.5 liters. Use char, $ to start typing");
+    waitBuf(30000);
+    while (Serial.available() > 0) {
+      char first = Serial.read();
+      cleanBuf();
+      if (first == '$') {
+        V = Serial.parseInt();
+        state = false;
+        cleanBuf();
+      } else {
+        V = 0;
+        Serial.println("****************************ERROR***************************");
+        cleanBuf();
+        turns--;
+      }
     }
+  }
 
-    int turns = 3;
+  Serial.println("*****************************END****************************");
+  Serial.print(V);
+  Serial.println(" millilitres");
+  return V;
+}
 
-    while(state && turns > 0){
-        Serial.println("Type how many millilitres of water you have. ex: $1500 *****");
-        Serial.println("which corresponds to 1.5 liters. Use char, $ to start typing");
-        while(Serial.available() > 0){
-            char first = Serial.read();
-            if(first == '$'){
-                V = Serial.parseInt();
-                state = false;  
-            }else{
-                V = 0;
-                Serial.println("****************************ERROR***************************");
-                turns--;
-            }
-        }
-    }
+bool verCommand(const char *cmd, int len) {
+  char *buf = new char[len];
+  Serial.readBytes(buf, len);
+  cleanBuf();
+  int i = 0;
+  while(cmd[i] == buf[i] && i < len){
+    i++;
+  }
+  delete [] buf;
 
-    Serial.println("*****************************END****************************");
-    Serial.print(V);
-    Serial.println(" millilitres");
-    return V;
+  if(i == len){
+    return true;
+  }else{
+    return false;
+  }
+}
+
+void cleanBuf(){
+  while (Serial.available() > 0) char bin = Serial.read();
+}
+
+void waitBuf(uint32_t timeout){
+  uint32_t tmr = millis();
+  while(!Serial.available() && millis() < tmr + timeout);
 }
