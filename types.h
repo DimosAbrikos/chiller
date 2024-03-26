@@ -1,10 +1,30 @@
 #include <Arduino.h>
+#include <EEPROM.h>
 
-typedef struct{
-    int pumpPower;
+class eepromSaver{
+  public:
+  eepromSaver(){
+    int i = offset;
+    if(EEPROM[i] == key){
+      readParams();
+    }else{
+      defParams();
+      writeKey();
+      writeParams();
+    }
+  }
 
+  void newKey(char key);
+  void setParams(const int*, int cnt);
+  int getParCount();
 
-}settings;
+  private:
+  void readParams();
+  void defParams();
+  void writeKey();
+  void writeParams();
+
+}
 
 const float WATER_HEAT_C = 4200; // Теплоемкость воды
 
