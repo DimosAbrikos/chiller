@@ -1,6 +1,6 @@
 #include "types.h"
 
-void heatFlow::setState(float pumpPower){
+void heatFlow::setPumpPower(float pumpPower){
     pPower = pumpPower;
 }
 
@@ -24,3 +24,39 @@ float heatFlow::getHeatingPower(){return heatPower;}
 float heatFlow::calc(float t1, float t2){
     return WATER_HEAT_C * pPower * per * (t2 - t1);
 }
+
+// ====================================================================================
+
+
+  eepromSaver::eepromSaver(){
+    key = 0x12;
+    offset = 0;
+
+    int i = offset;
+    if(EEPROM[i] == key){
+      readParams();
+    }else{
+      defParams();
+      writeKey();
+      writeParams();
+    }
+  }
+
+  void eepromSaver::readParams(){
+    EEPROM.get(offset + 1, prms);
+  }
+
+  void eepromSaver::defParams(){
+    prms.pumpPower = 1000;
+    prms.mode = 0;
+    prms.counterK = 7.5;
+  }
+
+  void eepromSaver::writeKey(){
+    int i = offset;
+    EEPROM[i] = key;
+  }
+  
+  void eepromSaver::writeParams(){
+    EEPROM.put(offset + 1, prms);
+  }
