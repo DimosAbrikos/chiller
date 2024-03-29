@@ -19,10 +19,10 @@ uint8_t mode = 0;
 int waterCnt = 0;
 
 // gl methods ===================================
-#include "functions.h"
 float getTemp(int ind);
 void counterTick(int * cnt, int pin);
-
+void display(float cPow, float hPow);
+int calibratePump();
 
 void setup() {
   // ==================================
