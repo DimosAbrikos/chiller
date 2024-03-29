@@ -52,7 +52,14 @@ void loop() {
       hFlow.setPumpPower(pow);
 
       hFlow.tick(getTemp(0), getTemp(1), millis());
-      if (prt) display(hFlow.getCoolingPower(), hFlow.getHeatingPower());
+      if (prt) {
+        Serial.print("pow : ");
+        Serial.print(pow);
+        Serial.print(" cnt : ");
+        Serial.print(waterCnt);
+        Serial.print(" ");
+        display(hFlow.getCoolingPower(), hFlow.getHeatingPower());
+      }
       waterCnt = 0;
     }
     everyTick();

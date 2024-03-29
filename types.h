@@ -2,7 +2,7 @@
 #include <EEPROM.h>
 
 typedef struct {
-  int pumpPower;
+  float pumpPower;
   uint8_t mode;
   float counterK;
 }params;
