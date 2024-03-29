@@ -14,12 +14,13 @@ public:  // ===============================================
 
   void readParams();
   void writeParams();
+  void defParams();
 
 private:  // ==============================================
   uint8_t key;
   int offset;
 
-  void defParams();
+  
   void writeKey();
 
 

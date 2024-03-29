@@ -29,7 +29,7 @@ float heatFlow::calc(float t1, float t2){
 
 
   eepromSaver::eepromSaver(){
-    key = 0x12;
+    key = 0x11;
     offset = 0;
 
     int i = offset;
@@ -48,8 +48,8 @@ float heatFlow::calc(float t1, float t2){
 
   void eepromSaver::defParams(){
     prms.pumpPower = 1000;
-    prms.mode = 0;
-    prms.counterK = 7.5;
+    prms.mode = 1;
+    prms.counterK = 450;
   }
 
   void eepromSaver::writeKey(){
