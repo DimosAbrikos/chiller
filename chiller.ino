@@ -23,8 +23,9 @@ int waterCnt = 0;
 // gl methods ===================================
 float getTemp(int ind);
 bool counterTick(int* cnt, int pin);
-void display(float cPow, float hPow);
-int calibratePump();
+void display(float t1, float t2, float cPow, float hPow);
+int calibrateWaterCounter();
+float calibratePump();
 
 void setup() {
   // ==================================
@@ -48,17 +49,17 @@ void loop() {
 
     if (millis() - tmr > period && enable) {
       tmr = millis();
-      float pow = (waterCnt / eepS.prms.counterK) / (period / 1000);
+      float pow = (waterCnt / eepS.prms.counterK) / (period / 1000); // л/сек
       hFlow.setPumpPower(pow);
 
       hFlow.tick(getTemp(0), getTemp(1), millis());
       if (prt) {
-        Serial.print("pow : ");
-        Serial.print(pow);
+        Serial.print("t1 : ");
+        Serial.print(getTemp(0));
         Serial.print(" cnt : ");
         Serial.print(waterCnt);
         Serial.print(" ");
-        display(hFlow.getCoolingPower(), hFlow.getHeatingPower());
+        display(getTemp(0), getTemp(1), hFlow.getCoolingPower(), hFlow.getHeatingPower());
       }
       waterCnt = 0;
     }
@@ -70,7 +71,7 @@ void loop() {
     if (millis() - tmr > period && enable) {
       tmr = millis();
       hFlow.tick(getTemp(0), getTemp(1), millis());
-      if (prt) display(hFlow.getCoolingPower(), hFlow.getHeatingPower());
+      if (prt) display(getTemp(0), getTemp(1), hFlow.getCoolingPower(), hFlow.getHeatingPower());
     }
     everyTick();
   }
@@ -84,7 +85,7 @@ void everyTick() {
     switch (c) {
       case 0:
         term.cleanBuf();
-        display(hFlow.getCoolingPower(), hFlow.getHeatingPower());
+        display(getTemp(0), getTemp(1), hFlow.getCoolingPower(), hFlow.getHeatingPower());
         break;
       case 1:
         term.cleanBuf();
@@ -114,8 +115,8 @@ void settings() {
     case 0:
       term.cleanBuf();
       if (!mode) {
-        int cl = calibratePump();
-        if (cl) {
+        float cl = calibratePump();
+        if (cl > 0) {
           hFlow.setPumpPower(cl);
           eepS.prms.pumpPower = cl;
           eepS.writeParams();
@@ -233,16 +234,20 @@ bool counterTick(int* cnt, int pin) {
 
 
 
-void display(float cPow, float hPow) {
+void display(float t1, float t2, float cPow, float hPow){
   Serial.flush();
-  Serial.print("Cooling power: ");
+  Serial.print("T1: ");
+  Serial.print(t1);
+  Serial.print(" T2: ");
+  Serial.print(t2);
+  Serial.print(" CPower: ");
   Serial.print(cPow);
-  Serial.print(" Heatimg power: ");
+  Serial.print(" HPower: ");
   Serial.println(hPow);
   Serial.flush();
 }
 
-int calibratePump() {
+float calibratePump() {
   term.cleanBuf();
   Serial.println(strings[0]);
   Serial.println("# Now we start calibrate pump");
@@ -253,14 +258,14 @@ int calibratePump() {
   if (!term.waitBuf(60000)) return 0;
   bool state = false;
   bool tr = true;
-  int V = 0;
+  float V = 0;
   state = term.verCommand("/y", 2);
 
   int turns = 3;
 
   while (state && turns > 0) {
     Serial.println(strings[0]);
-    Serial.println("# Type how many millilitres of water you have. ex: >1500 ");
+    Serial.println("# Type how many millilitres per 10 sec you drained. ex: >1500 ");
     Serial.println("# which corresponds to 1.5 liters. Use char, > to start typing");
     Serial.println(strings[0]);
     term.cleanBuf();
@@ -269,7 +274,8 @@ int calibratePump() {
       char first = Serial.read();
       term.cleanBuf();
       if (first == '>') {
-        V = Serial.parseInt();
+        V = Serial.parseFloat();
+        V = V/10000;
         state = false;
         term.cleanBuf();
       } else {
