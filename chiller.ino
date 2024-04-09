@@ -24,6 +24,8 @@ int waterCnt = 0;
 float getTemp(int ind);
 bool counterTick(int* cnt, int pin);
 void display(float t1, float t2, float cPow, float hPow);
+void buzzer(int snd);
+void led(int sgn);
 int calibrateWaterCounter();
 float calibratePump();
 
@@ -33,12 +35,16 @@ void setup() {
   hFlow.setPumpPower(eepS.prms.pumpPower);
   mode = eepS.prms.mode;
   // ==================================
+  pinMode(LED, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
+  // ==================================
   Serial.begin(9600);
   Serial.setTimeout(500);
   sensor1.requestTemp();
   sensor2.requestTemp();
   tmr = millis();
-  delay(1000);
+  buzzer(0);
+  led(0);
 }
 
 void loop() {
@@ -54,11 +60,6 @@ void loop() {
 
       hFlow.tick(getTemp(0), getTemp(1), millis());
       if (prt) {
-        Serial.print("t1 : ");
-        Serial.print(getTemp(0));
-        Serial.print(" cnt : ");
-        Serial.print(waterCnt);
-        Serial.print(" ");
         display(getTemp(0), getTemp(1), hFlow.getCoolingPower(), hFlow.getHeatingPower());
       }
       waterCnt = 0;
@@ -72,6 +73,7 @@ void loop() {
       tmr = millis();
       hFlow.tick(getTemp(0), getTemp(1), millis());
       if (prt) display(getTemp(0), getTemp(1), hFlow.getCoolingPower(), hFlow.getHeatingPower());
+      if (hFlow.getCoolingPower() <= 0) buzzer(1);
     }
     everyTick();
   }
@@ -346,4 +348,37 @@ int calibrateWaterCounter() {
   Serial.println(" Pulses");
   Serial.println(strings[0]);
   return V;
+}
+
+void buzzer(int snd){
+  tone(BUZZER, 1000);
+  delay(250);
+  noTone(BUZZER);
+  delay(250);
+
+  tone(BUZZER, 1000);
+  delay(250);
+  noTone(BUZZER);
+  delay(250);
+
+  tone(BUZZER, 1000);
+  delay(250);
+  noTone(BUZZER);
+  delay(250);
+}
+void led(int sgn){
+  digitalWrite(LED, 1);
+  delay(250);
+  digitalWrite(LED, 0);
+  delay(250);
+
+  digitalWrite(LED, 1);
+  delay(250);
+  digitalWrite(LED, 0);
+  delay(250);
+
+  digitalWrite(LED, 1);
+  delay(250);
+  digitalWrite(LED, 0);
+  delay(250);
 }
