@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 const char * strings[9] = {
-  "# ============================================================ #", //0
+  "# =============================================== #", //0
   "# Enter settings", 
   "# Type /cal to calibrate water counting",
   "# Type /apr to change print mode auto/querry",
