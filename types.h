@@ -2,6 +2,8 @@
 #include <EEPROM.h>
 
 typedef struct {
+  int fanPower;
+  uint8_t fanMode;
   float pumpPower;
   uint8_t mode;
   float counterK;

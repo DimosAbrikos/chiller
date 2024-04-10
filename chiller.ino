@@ -18,6 +18,8 @@ uint32_t period = 5000;  // min 800
 bool enable = true;
 bool prt = true;
 uint8_t mode = 1;
+uint8_t fanMode = 0;
+int tmpFan = 36;
 int waterCnt = 0;
 
 // gl methods ===================================
@@ -34,20 +36,33 @@ void setup() {
   eepS.readParams();
   hFlow.setPumpPower(eepS.prms.pumpPower);
   mode = eepS.prms.mode;
+  fanMode = eepS.prms.fanMode;
+
   // ==================================
   pinMode(LED, OUTPUT);
   pinMode(BUZZER, OUTPUT);
+  pinMode(FAN, OUTPUT);
   // ==================================
   Serial.begin(9600);
   Serial.setTimeout(500);
   sensor1.requestTemp();
   sensor2.requestTemp();
   tmr = millis();
-  buzzer(0);
+  buzzer(1);
   led(0);
 }
 
 void loop() {
+
+  if (fanMode) {
+    int pwr = hFlow.getHeatingPower() / 4;
+    if (pwr > 255) pwr = 255;
+    if (pwr <= 0) pwr = 0;
+    analogWrite(FAN, pwr);
+  } else {
+    analogWrite(FAN, tmpFan);
+  }
+
   if (mode) {
     // ==============================================================
 
@@ -55,13 +70,14 @@ void loop() {
 
     if (millis() - tmr > period && enable) {
       tmr = millis();
-      float pow = (waterCnt / eepS.prms.counterK) / (period / 1000); // л/сек
+      float pow = (waterCnt / eepS.prms.counterK) / (period / 1000);  // л/сек
       hFlow.setPumpPower(pow);
 
       hFlow.tick(getTemp(0), getTemp(1), millis());
       if (prt) {
         display(getTemp(0), getTemp(1), hFlow.getCoolingPower(), hFlow.getHeatingPower());
       }
+      if (hFlow.getCoolingPower() <= 0) buzzer(0);
       waterCnt = 0;
     }
     everyTick();
@@ -73,7 +89,7 @@ void loop() {
       tmr = millis();
       hFlow.tick(getTemp(0), getTemp(1), millis());
       if (prt) display(getTemp(0), getTemp(1), hFlow.getCoolingPower(), hFlow.getHeatingPower());
-      if (hFlow.getCoolingPower() <= 0) buzzer(1);
+      if (hFlow.getCoolingPower() <= 0) buzzer(0);
     }
     everyTick();
   }
@@ -109,10 +125,11 @@ void settings() {
   Serial.println(strings[4]);
   Serial.println(strings[5]);
   Serial.println(strings[6]);
+  Serial.println("# Type /cfm to change work mode");
   Serial.println(strings[0]);
   term.cleanBuf();
   term.waitBuf(60000);
-  int cmd = term.verCommand("/cal/lst/rep/chm/apr", 4, 5);
+  int cmd = term.verCommand("/cal/lst/rep/chm/apr/cfm", 4, 6);
   switch (cmd) {
     case 0:
       term.cleanBuf();
@@ -158,7 +175,7 @@ void settings() {
     case 3:
       term.cleanBuf();
       Serial.println(strings[0]);
-      Serial.println("#                    Changing work mode ...                    #");
+      Serial.println("# Changing work mode ...");
       Serial.print("# Previos mode: ");
       Serial.println(mode);
 
@@ -191,6 +208,21 @@ void settings() {
       }
       Serial.println(strings[0]);
 
+      break;
+
+    case 5:
+      term.cleanBuf();
+      Serial.println(strings[0]);
+      Serial.println("# Changing fan mode ... ");
+      Serial.print("# Previos mode: ");
+      Serial.println(fanMode);
+
+      eepS.prms.fanMode = !eepS.prms.fanMode;
+      fanMode = eepS.prms.fanMode;
+      Serial.print("# Active mode: ");
+      Serial.println(fanMode);
+      Serial.println(strings[0]);
+      eepS.writeParams();
       break;
 
     default:
@@ -236,7 +268,7 @@ bool counterTick(int* cnt, int pin) {
 
 
 
-void display(float t1, float t2, float cPow, float hPow){
+void display(float t1, float t2, float cPow, float hPow) {
   Serial.flush();
   Serial.print("T1: ");
   Serial.print(t1);
@@ -277,7 +309,7 @@ float calibratePump() {
       term.cleanBuf();
       if (first == '>') {
         V = Serial.parseFloat();
-        V = V/10000;
+        V = V / 10000;
         state = false;
         term.cleanBuf();
       } else {
@@ -350,23 +382,54 @@ int calibrateWaterCounter() {
   return V;
 }
 
-void buzzer(int snd){
-  tone(BUZZER, 1000);
-  delay(250);
-  noTone(BUZZER);
-  delay(250);
+void buzzer(int snd) {
+  switch (snd) {
+    case 0:
+      tone(BUZZER, 350);
+      delay(150);
+      noTone(BUZZER);
+      delay(150);
 
-  tone(BUZZER, 1000);
-  delay(250);
-  noTone(BUZZER);
-  delay(250);
+      tone(BUZZER, 350);
+      delay(150);
+      noTone(BUZZER);
+      delay(150);
 
-  tone(BUZZER, 1000);
-  delay(250);
-  noTone(BUZZER);
-  delay(250);
+      delay(250);
+
+      tone(BUZZER, 350);
+      delay(150);
+      noTone(BUZZER);
+      delay(150);
+
+      tone(BUZZER, 350);
+      delay(150);
+      noTone(BUZZER);
+      delay(150);
+
+      delay(250);
+
+      break;
+    case 1:
+      tone(BUZZER, 1000);
+      delay(250);
+      noTone(BUZZER);
+      delay(250);
+
+      tone(BUZZER, 1000);
+      delay(250);
+      noTone(BUZZER);
+      delay(250);
+
+      tone(BUZZER, 1000);
+      delay(250);
+      noTone(BUZZER);
+      delay(250);
+
+      break;
+  }
 }
-void led(int sgn){
+void led(int sgn) {
   digitalWrite(LED, 1);
   delay(250);
   digitalWrite(LED, 0);

@@ -3,3 +3,4 @@
 #define COUNTER_PIN 7
 #define LED 12
 #define BUZZER 11
+#define FAN 9
