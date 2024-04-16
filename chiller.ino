@@ -20,12 +20,13 @@ bool prt = true;
 uint8_t mode = 1;
 uint8_t fanMode = 0;
 int tmpFan = 36;
+int pwr =  0;
 int waterCnt = 0;
 
 // gl methods ===================================
 float getTemp(int ind);
 bool counterTick(int* cnt, int pin);
-void display(float t1, float t2, float cPow, float hPow);
+void display(float t1, float t2, float cPow, float hPow, int mP);
 void buzzer(int snd);
 void led(int sgn);
 int calibrateWaterCounter();
@@ -53,9 +54,10 @@ void setup() {
 }
 
 void loop() {
+ 
 
   if (fanMode) {
-    int pwr = hFlow.getHeatingPower() / 4;
+    pwr = int(hFlow.getHeatingPower());
     if (pwr > 255) pwr = 255;
     if (pwr <= 0) pwr = 0;
     analogWrite(FAN, pwr);
@@ -75,7 +77,7 @@ void loop() {
 
       hFlow.tick(getTemp(0), getTemp(1), millis());
       if (prt) {
-        display(getTemp(0), getTemp(1), hFlow.getCoolingPower(), hFlow.getHeatingPower());
+        display(getTemp(0), getTemp(1), hFlow.getCoolingPower(), hFlow.getHeatingPower(), pwr);
       }
       if (hFlow.getCoolingPower() <= 0) buzzer(0);
       waterCnt = 0;
@@ -88,7 +90,7 @@ void loop() {
     if (millis() - tmr > period && enable) {
       tmr = millis();
       hFlow.tick(getTemp(0), getTemp(1), millis());
-      if (prt) display(getTemp(0), getTemp(1), hFlow.getCoolingPower(), hFlow.getHeatingPower());
+      if (prt) display(getTemp(0), getTemp(1), hFlow.getCoolingPower(), hFlow.getHeatingPower(), pwr);
       if (hFlow.getCoolingPower() <= 0) buzzer(0);
     }
     everyTick();
@@ -103,7 +105,7 @@ void everyTick() {
     switch (c) {
       case 0:
         term.cleanBuf();
-        display(getTemp(0), getTemp(1), hFlow.getCoolingPower(), hFlow.getHeatingPower());
+        display(getTemp(0), getTemp(1), hFlow.getCoolingPower(), hFlow.getHeatingPower(), pwr);
         break;
       case 1:
         term.cleanBuf();
@@ -268,16 +270,18 @@ bool counterTick(int* cnt, int pin) {
 
 
 
-void display(float t1, float t2, float cPow, float hPow) {
+void display(float t1, float t2, float cPow, float hPow, int mP) {
   Serial.flush();
   Serial.print("T1: ");
   Serial.print(t1);
-  Serial.print(" T2: ");
-  Serial.print(t2);
-  Serial.print(" CPower: ");
-  Serial.print(cPow);
+  // Serial.print(" T2: ");
+  // Serial.print(t2);
+  // Serial.print(" CPower: ");
+  // Serial.print(cPow);
   Serial.print(" HPower: ");
-  Serial.println(hPow);
+  Serial.print(hPow);
+  Serial.print(" MotPower: ");
+  Serial.println(mP);
   Serial.flush();
 }
 
